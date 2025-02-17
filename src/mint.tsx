@@ -36,11 +36,14 @@ export default function Mint() {
   const [contracts, setContracts] = useState<ContractInfo[] | null>(null);
 
   useEffect(() => {
+    // Fetch and process the list of deployed Glittr asset contracts
     const run = async () => {
-      const res = await fetch(`${GLITTR_API}/helper/assets`);
 
+      // API to get list of assets
+      const res = await fetch(`${GLITTR_API}/helper/assets`);
       const listContractRaw = await res.json();
 
+      // Filter to only include Freemint asset contracts
       const contracts = await Promise.all(
         Object.keys(listContractRaw.result)
           .filter((contractId: string) => {
@@ -53,6 +56,7 @@ export default function Mint() {
              }
           })
           .map(async (contractId: string) => {
+            // Fetch asset contract metadata to get the amount_per_mint
             const contractInfo = listContractRaw.result[contractId];
             const result = await (
               await fetch(
@@ -78,11 +82,14 @@ export default function Mint() {
     run();
   }, []);
 
+  // This is function to construct and broadcast a Glittr asset mint transaction
   const mint = async (contract: ContractInfo) => {
     setMintingContractId(contract.contractId);
     try {
       if (!contract.contractId) return;
       const [blockContractId, txContractId] = contract.contractId.split(":").map(Number);
+
+      // Construct a Glittr asset mint message
       const tx = txBuilder.contractCall({
         contract: [blockContractId, txContractId],
         call_type: {
@@ -91,6 +98,8 @@ export default function Mint() {
       });
       console.log("tx", tx)
 
+      // This is a Glittr sdk helper function
+      // to construct PSBT with embedded Glittr message in the OP_RETURN
       const psbt = await client.createTx({
         address: paymentAddress,
         tx,
@@ -98,6 +107,7 @@ export default function Mint() {
         publicKey: paymentPublicKey,
       });
 
+      // Sign the PSBT
       const result = await signPsbt(psbt.toHex());
 
       if (result && result?.signedPsbtHex) {
@@ -105,6 +115,8 @@ export default function Mint() {
         newPsbt.finalizeAllInputs();
         const newHex = newPsbt.extractTransaction(true).toHex();
 
+        // This is a Glittr sdk helper function
+        // to broadcast bitcoin transaction
         const txid = await client.broadcastTx(newHex);
         setMintStatus({ success: true, txid });
         setShowModal(true);

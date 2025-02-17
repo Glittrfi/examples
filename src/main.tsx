@@ -10,7 +10,8 @@ import { NETWORK } from "./constants";
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <ParticlesBackground />
-    <LaserEyesProvider config={{ network: NETWORK == "regtest" ? GLITTR_DEVNET : NETWORK == "testnet" ? TESTNET4 : NETWORK}}>
+    {/* Provider for Wallet Connection */}
+    <LaserEyesProvider config={{ network: NETWORK == "regtest" ? GLITTR_DEVNET : NETWORK == "testnet" ? TESTNET4 : NETWORK}}> 
       <NavigationWrapper />
       <Mint />
     </LaserEyesProvider>

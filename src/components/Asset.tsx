@@ -16,6 +16,7 @@ export default function Asset() {
   const [loading, setLoading] = useState(true);
   const { paymentAddress, connected } = useLaserEyes();
 
+  // Function to get all minted asset by address
   const fetchAssets = async () => {
     setLoading(true);
     try {
@@ -23,6 +24,7 @@ export default function Asset() {
         return;
       }
 
+      // API to fetch minted assets by address 
       const assetResponse = await fetch(
         `${GLITTR_API}/helper/address/${paymentAddress}/balance-summary`
       );
